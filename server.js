@@ -8,7 +8,37 @@ server.use(express.json());
 
 server.get("/", async (req,res, next) => {
     try {
+        if (req.query.sortby) {
+            if (req.query.sortdir && req.query.limit) {
+                let response = await db.select("*").from("accounts").orderBy(req.query.sortby, req.query.sortdir).limit(req.query.limit);
+                res.json(response);
+            } else if (req.query.sortdir && !req.query.limit) {
+                let response = await db.select("*").from("accounts").orderBy(req.query.sortby, req.query.sortdir);
+                res.json(response);
+            } else if (req.query.limit && !req.query.sortdir) {
+                let response = await db.select("*").from("accounts").limit(req.query.limit);
+                res.json(response);  
+            } else {
+                res.json(await db.select("*").from("accounts").orderBy(req.query.sortby, "asc"));
+            };
+
+        } else if(req.query.limit) {
+            if (req.query.sortdir) {
+                let response = await db.select("*").from("accounts").orderBy("id", req.query.sortdir).limit(req.query.limit);
+                res.json(response);
+            } else {
+                let response = await db.select("*").from("accounts").limit(req.query.limit);
+                res.json(response);
+            };
+
+        } else if (req.query.sortdir) {
+            let response = await db.select("*").from("accounts").orderBy("id", req.query.sortdir);
+            res.json(response);
+
+        } else {
         res.json(await db.select("*").from("accounts"));
+        };
+        
     } catch (err) {
         next(err);
     }
